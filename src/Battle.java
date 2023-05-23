@@ -1,138 +1,175 @@
 import java.util.Scanner;
 
 public class Battle {
-  private static Scanner decision = new Scanner(System.in);
-  private static String action;
-  private static Player player;
-  private static Enemy enemy;
+  private Scanner decision = new Scanner(System.in);
+  private String action;
+  private Player player;
+  private Enemy enemy;
 
-  public Battle(Player player, Enemy enemy) {
+  public Battle(Player player, Enemy enemy) { // constructor needed to start the battle system
     this.player = player;
     this.enemy = enemy;
   }
 
-  public static void BattleCamp() {
-    System.out.println("\n¡Oh no! ¡Un temido " + enemy.getName() + " te desafió a un combate!\n");
-    while (player.getIsAlive() && enemy.getIsAlive()) {
-      System.out.println("\n¿Qué vas a hacer?");
-      System.out.println("[a] Atacar | [c] Curar\n");
-      action = decision.nextLine();
+  public void BattleCamp() { // static method where fight system is build
+ 
+    boolean move = false;
+    System.out.println("\nOh no! A feared " + enemy.getName() + " challenged you to a fight!\n");
+    while (player.getIsAlive() && enemy.getIsAlive()) { // if both still alive
+      System.out.println("----------------------------------");
+      System.out.println("   What are you going to do?");
+      System.out.println("[a] Attack | [h] Heal | [s] Stats");
+      System.out.println("----------------------------------");
+      action = decision.nextLine(); // player action
       if (action.equalsIgnoreCase("a")) {
         plaAttack();
-      } else {
-        plaHeal();
+        move = true;
       }
-      System.out.println("\nAhora es el turno del enemigo...\n");
+      if (action.equalsIgnoreCase("s")) { // if the player wants to see the stats, would not resive any hit from enemy
+        move = false;
+        player.stats();
+        enemy.Stats();
+        System.out.println("\n-----------------------");
+        System.out.println("What are you going to do?");
+        System.out.println("  [a] Attack | [h] Heal");
+        System.out.println("-------------------------");
+        action = decision.nextLine();
+        if (action.equalsIgnoreCase("a")) {
+          plaAttack(); 
+          move = true;
+        } if (action.equalsIgnoreCase("h")) {
+          plaHeal(); 
+          move = false;
+        }
+      } if (action.equalsIgnoreCase("h")) {
+        plaHeal(); 
+        move = false;
+      }
+      if(move){
+      System.out.println("--------------------");
+      System.out.println("Now is enemy turn...");
+      System.out.println("--------------------");
       if (Main.Dice() >= 4) {
-        eneAttack();
-      } else{
-        eneHeal();
+        eneAttack(); 
+      } else {
+        eneHeal(); 
+        }
       }
     }
   }
 
-  public static void plaHeal() {
+  public void plaHeal() { // system to heal the player, and do not over heal
     int num = Main.Dice();
-    if (player.getHealth() < player.getMaxHealth() && player.getMaxHealth() - player.getHealth() <= num) {
-      System.out.println("\n¡El " + player.getClase() + " se ha curado " + num + " puntos de salud!\n");
+    System.out.println("++++++++++++++++++++++++++++++++++++++++++");
+    if (player.getHealth() < player.getMaxHealth() && player.getHealth() - player.getMaxHealth() <= num) {
+      System.out.println("\n" + player.getUsername() + " got healed " + num + " hp!\n");
       player.setHealth(player.getHealth() + num);
     } else {
-      System.out.println("\n¡Ya tienes suficiente vida y no es necesario en este momento!\n");
+      System.out.println("\nYou already have enough hp, so " + player.getUsername() + " decides that is not worth it");
     }
+    System.out.println("++++++++++++++++++++++++++++++++++++++++++\n");
   }
 
-  public static void plaAttack() {
+  public void plaAttack() { // player has 20% of failing an attack
+    System.out.println("++++++++++++++++++++++++++++++++++++++++++");
     if (Main.Dice() > 2) {
-      AtaqueEfectivo();
+      AtaqueEfectivo(); 
       enemy.setHealth(enemy.getHealth() - player.getDamage());
       if (enemy.getHealth() <= 0) {
         enemy.setIsAlive(false);
-        System.out.println("\n¡Derrotaste al enemigo " + enemy.getName() + "!");
+        System.out.println("\nYou defeated " + enemy.getName() + "!\n");
       } else {
-        System.out.println("\n¡El enemigo " + enemy.getName() + " ha recibido " + player.getDamage() + " puntos de daño!\n");
-        System.out.println("\nSalud restante del enemigo: " + enemy.getHealth() + "/" + enemy.getMaxHealth() +"\n");
+        System.out.println("\nThe enemy " + enemy.getName() + " got " + player.getDamage() + " points of damage!\n");
+        System.out.println("\nEnemy hp left: " + enemy.getHealth() + "/" + enemy.getMaxHealth() + "\n");
       }
     } else {
-      AtaqueFailed();
+      AtaqueFailed(); 
     }
+    System.out.println("++++++++++++++++++++++++++++++++++++++++++\n");
   }
 
-  public static void eneHeal() {
+  public void eneHeal() { // enemy can heal but cannot go over max heal
     int num = Main.Dice();
-    if (enemy.getHealth() < enemy.getMaxHealth() && enemy.getMaxHealth() - enemy.getHealth() <= num) {
-      System.out.println("\n¡El " + enemy.getName() + " se ha curado " + num + " puntos de salud!\n");
+    System.out.println("******************************************");
+    if (enemy.getHealth() < enemy.getMaxHealth() && enemy.getHealth() - enemy.getMaxHealth() <= num) {
+      System.out.println("\n¡The " + enemy.getName() + " got healed " + num + " hp!\n");
       enemy.setHealth(enemy.getHealth() + num);
     } else {
-      System.out.println("\n¡El enemigo " + enemy.getName() + " ya tiene suficiente vida y no quiere gastar más!\n");
+      System.out
+          .println("\nThe enemy " + enemy.getName() + " already have enough hp, so, decides to save it for later!\n");
     }
+    System.out.println("******************************************\n");
   }
 
-  public static void eneAttack() {
-    if (Main.Dice() > 3) {
-      AtaqueEfectivo();
+  public void eneAttack() {
+    System.out.println("******************************************");
+    if (Main.Dice() > 3) { // enemy has about 30% of failling the attack
+      AtaqueEfectivo(); 
       player.setHealth(player.getHealth() - enemy.getDamage());
       if (player.getHealth() <= 0) {
         player.setIsAlive(false);
-        System.out.println("\n¡El enemigo " + enemy.getName() + " te ha derrotado!");
+        System.out.println("\n" + enemy.getName() + " defeated you!");
       } else {
-        System.out.println("\n¡El enemigo " + enemy.getName() + " te ha causado " + enemy.getDamage() + " puntos de daño!\n");
-        System.out.println("\nSalud restante del jugador: " + player.getHealth() + "/" + player.getMaxHealth() + "\n");
+        System.out.println("\n" + enemy.getName() + " deals you " + enemy.getDamage() + " damage point!\n");
+        System.out.println("\nPlayer hp: " + player.getHealth() + "/" + player.getMaxHealth() + "\n");
       }
     } else {
-      AtaqueFailed();
+      AtaqueFailed(); 
     }
+    System.out.println("******************************************\n");
   }
 
-  public static void AtaqueEfectivo() {
+  public void AtaqueEfectivo() { // gives a random mesage when the player or enemy acerts an attack
     int num = Main.Dice();
     switch (num) {
       case 1:
-        System.out.println("\n\n¡Un gran golpe!\n");
+        System.out.println("\nWhat a Hit!\n");
         break;
       case 2:
-        System.out.println("\n\n¡Un golpe fulminante!\n");
+        System.out.println("\nAn awesome hit!\n");
         break;
       case 3:
-        System.out.println("\n\n¡Qué impacto!\n");
+        System.out.println("\nYou got this!\n");
         break;
       case 4:
-        System.out.println("\n\n¡Y acierta el golpe!\n");
+        System.out.println("\nShow who leads!\n");
         break;
       case 5:
-        System.out.println("\n\n¡Wow, qué fuerte!\n");
+        System.out.println("\nWow, what a strength!\n");
         break;
       case 6:
-        System.out.println("\n\n¡Cuánta fuerza!\n");
+        System.out.println("\nLook at that damage!\n");
         break;
-      default:
-        System.out.println("\n\n¡Un golpe efectivo!\n");
+      default: // if for any reason, Dice() gives a number bigger or smaller than 6, it will
+               // result in the following message.
+        System.out.println("\nThat had to hurt!\n");
         break;
     }
   }
 
-  public static void AtaqueFailed() {
+  public void AtaqueFailed() { // show a random message to player or enemy when fail an attack
     int num = Main.Dice();
     switch (num) {
       case 1:
-        System.out.println("\n\n¡Uy, tan cerca!\n");
-        break;
+        System.out.println("\nWas so close! (Missed)\n");
+        break; // stop the sequence
       case 2:
-        System.out.println("\n\n¡Fallaste!\n");
+        System.out.println("\nAttack failed! (Missed)\n");
         break;
       case 3:
-        System.out.println("\n\n¡A dónde apuntas?\n");
+        System.out.println("\nWhere are you looking at? (Missed)\n");
         break;
       case 4:
-        System.out.println("\n\n¡Allá no está el enemigo!\n");
+        System.out.println("\nEnemy is at the other way! (Missed)\n");
         break;
       case 5:
-        System.out.println("\n\n¡Inténtalo de nuevo!\n");
+        System.out.println("\nTry it again! (Missed)\n");
         break;
       case 6:
-        System.out.println("\n\n¡¿Qué haces? ¡El enemigo está justo frente a ti!\n");
+        System.out.println("\n What are you doing? the enemy is just infront of you! (Missed)\n");
         break;
-      default:
-        System.out.println("\n\n¡Un golpe efectivo!\n");
+      default: // if for any reason, Dice() gives a number bigger or smaller than 6, it will result in the following message.
+        System.out.println("\nWhat are you waiting for? (Missed)\n");
         break;
     }
   }
